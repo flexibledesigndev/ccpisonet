@@ -5,36 +5,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCcw, Settings } from "lucide-react";
 import { useRef, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
+import CoinTopUp from "@/components/CoinTopUp";
+import { useTimer } from "./context/TimerContext";
 
 export default function Home() {
     const [pcName, setPcName] = useState("Loading...");
-    const [connectionStatus, setConnectionStatus] = useState(null);
+
+    const{ formatTime, timeLeft } = useTimer();
 
     const iframeRef = useRef(null);
-    
-    useEffect(() => {
-
-      async function getHTML() {
-        try {
-          const html = await invoke("fetch_html", { url: "http://11.0.0.1/status" });        
-          
-          // Extract connection status from DOM
-          const parser = new DOMParser();
-          const doc = parser.parseFromString(html, 'text/html');
-          const statusText = doc.querySelector('#connectionStatus')?.textContent?.trim();
-
-          setConnectionStatus(statusText || 'Disconnected');          
-
-        } catch (err) {
-          console.error("Failed to fetch HTML:", err);
-        }
-      }
-
-      getHTML();
-      const interval = setInterval(getHTML, 1000); // ⏱️ every 1 second
-      return () => clearInterval(interval);      
-    }, []);    
-
 
     useEffect(() => {
       // Get PC name
@@ -82,8 +61,7 @@ export default function Home() {
                   This computer will shutdown in:
                 </div>
                 <div className="font-mono text-6xl font-bold tracking-wider text-secondary-foreground">
-                  {/* {formatTime(timeLeft)} */}
-                  {connectionStatus}
+                  {formatTime(timeLeft)}
                 </div>
               </div>
           </div>
@@ -137,7 +115,7 @@ export default function Home() {
                   ></iframe>
               )} */}
 
-              {/* <CoinTopUp /> */}
+              <CoinTopUp />
 
 
 

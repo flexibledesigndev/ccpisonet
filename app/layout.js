@@ -1,5 +1,6 @@
 import localFont from 'next/font/local';
 import "./globals.css";
+import { TimerProvider } from './context/TimerContext';
 
 const inter = localFont({
   src: [
@@ -28,7 +29,9 @@ export default function RootLayout({ children }) {
       <body
         className={inter.className}
       >
-        {children}
+        <TimerProvider>
+            {children}
+        </TimerProvider>
       </body>
     </html>
   );
