@@ -24,7 +24,8 @@
     ],
     "security": {
       "csp": "default-src 'self'; frame-src *;"
-    }
+    }    
+
   },
   "bundle": {
     "active": true,
