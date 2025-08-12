@@ -1,8 +1,8 @@
 "use client";
 import { useState } from "react";
-import { Router } from "next/router";
 import { useTimer } from "../context/TimerContext";
 import { ArrowLeft } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
