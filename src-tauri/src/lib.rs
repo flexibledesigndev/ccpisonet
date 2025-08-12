@@ -13,7 +13,11 @@ use std::{
 use tauri::{AppHandle, Manager, State};
 use tauri::path::BaseDirectory;
 
+// no window hide in the background
+use std::os::windows::process::CommandExt; 
+
 struct KeyBlockerState(Mutex<Option<Child>>);
+struct WindowsCCState(Mutex<Option<Child>>);
 
 #[tauri::command]
 fn start_blocker(app_handle: AppHandle, state: tauri::State<'_, KeyBlockerState>) -> Result<(), String> {
@@ -22,7 +26,10 @@ fn start_blocker(app_handle: AppHandle, state: tauri::State<'_, KeyBlockerState>
         .resolve("keyblocker.exe", BaseDirectory::Resource)
         .map_err(|e| e.to_string())?;
 
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+
     let child = Command::new(exe_path)
+        .creation_flags(CREATE_NO_WINDOW)
         .spawn()
         .map_err(|e| e.to_string())?;
 
@@ -44,6 +51,34 @@ fn stop_blocker(state: State<'_, KeyBlockerState>) -> Result<(), String> {
 #[tauri::command]
 fn is_blocker_running(state: State<'_, KeyBlockerState>) -> bool {
     state.0.lock().unwrap().is_some()
+}
+
+#[tauri::command]
+fn start_windowscc(app_handle: AppHandle, state: tauri::State<'_, WindowsCCState>) -> Result<(), String> {
+    let exe_path = app_handle
+        .path()
+        .resolve("windowsCC.exe", BaseDirectory::Resource)
+        .map_err(|e| e.to_string())?;
+
+    const CREATE_NO_WINDOW: u32 = 0x08000000;
+
+    let child = Command::new(exe_path)
+        .creation_flags(CREATE_NO_WINDOW)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    *state.0.lock().unwrap() = Some(child);
+
+    Ok(())
+}
+
+#[tauri::command]
+fn stop_windowscc(state: State<'_, WindowsCCState>) -> Result<(), String> {
+    if let Some(mut child) = state.0.lock().unwrap().take() {
+        child.kill().map_err(|e| e.to_string())?;
+        println!("WindowsCC stopped");
+    }
+    Ok(())
 }
 
 
@@ -153,6 +188,7 @@ fn save_settings(app_handle: AppHandle, settings: String) -> Result<(), String> 
 pub fn run() {
   tauri::Builder::default()
     .manage(KeyBlockerState(std::sync::Mutex::new(None)))
+    .manage(WindowsCCState(std::sync::Mutex::new(None)))
     .invoke_handler(tauri::generate_handler![
         get_settings,
         save_settings,
@@ -162,12 +198,42 @@ pub fn run() {
         get_default_gateway,
         start_blocker,
         stop_blocker,
-        is_blocker_running
+        is_blocker_running,
+        start_windowscc,
+        stop_windowscc
     ])
     .on_window_event(|window, event| {
-        if let tauri::WindowEvent::CloseRequested { .. } = event {
+        if let tauri::WindowEvent::CloseRequested { api, .. } = event {
             let state = window.state::<KeyBlockerState>();
-            let _ = stop_blocker(state); // ignore errors
+            let _ = stop_blocker(state); // ignore errors          
+            
+            let windowscc_state = window.state::<WindowsCCState>();
+            let _ = stop_windowscc(windowscc_state); // ignore errors     
+
+            let app_handle = window.app_handle();
+
+            // Read settings.json safely
+            let relaunch = match app_handle.path().app_data_dir() {
+                Ok(app_dir) => {
+                    let settings_path = app_dir.join("settings.json");
+                    if let Ok(settings_str) = fs::read_to_string(settings_path) {
+                        if let Ok(settings_json) = serde_json::from_str::<Value>(&settings_str) {
+                            settings_json.get("relaunchOnClose").and_then(|v| v.as_bool()).unwrap_or(true)
+                        } else {
+                            true // default relaunch if JSON parse fails
+                        }
+                    } else {
+                        true // default relaunch if reading fails
+                    }
+                }
+                Err(_) => true, // default relaunch if path fails
+            };
+    
+            if relaunch {
+                api.prevent_close();
+                app_handle.restart();
+            }            
+
         }
     })    
     .run(tauri::generate_context!())

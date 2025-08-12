@@ -35,13 +35,16 @@ export function useAppGlobalEffects() {
         if (connectionStatus === "Connected") {
           // await tauriWindow.setAlwaysOnTop(false);
           // await tauriWindow.setFullscreen(false); 
-          await invoke("stop_blocker");         
+          await invoke("start_windowscc");
+          await invoke("stop_blocker");            
         } else {
           // await tauriWindow.setAlwaysOnTop(true);
           // await tauriWindow.setFullscreen(true);
+          await invoke("stop_windowscc");
           await invoke("start_blocker");
         }
       } catch (error) {
+        await invoke("stop_windowscc");
         console.error("Failed to stop/start blocker:", error);
       }
     };
