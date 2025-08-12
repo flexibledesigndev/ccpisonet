@@ -8,12 +8,15 @@ import { invoke } from "@tauri-apps/api/core";
 import CoinTopUp from "@/components/CoinTopUp";
 import { useTimer } from "./context/TimerContext";
 import { useRouter } from "next/navigation";
+import { useAppGlobalEffects } from "@/hooks/globalEffects";
 
 export default function Home() {
     const [pcName, setPcName] = useState("Loading...");
     const router = useRouter();
 
-    const{ formatTime, timeLeft } = useTimer();
+    useAppGlobalEffects();
+
+    const{ formatTime, timeLeft, settings, showWarning } = useTimer();
 
     const iframeRef = useRef(null);
 
@@ -72,16 +75,16 @@ export default function Home() {
           </div>
 
           {/* Warning Message */}
-          {/* {showWarning && (
+          {showWarning && (
             <div className="animate-pulse rounded-lg bg-red-500 p-4 text-center text-white">
               Warning: Computer will shutdown in {settings.warningTime} seconds!
             </div>
-          )} */}
+          )}
         </div>
         <div className="flex flex-col items-center space-y-4">
           {/* Brand Name/Logo */}
           <div className="text-3xl font-bold tracking-wider text-secondary-foreground">
-            {/* {settings.logoType === "text" ? (
+            {settings.logoType === "text" ? (
               settings.logoText
             ) : settings.logoImage ? (
               <img
@@ -91,8 +94,7 @@ export default function Home() {
               />
             ) : (
               "Cara & Cassey Pisonet"
-            )} */}
-            Cara & Cassey Pisonet
+            )}
           </div>
           <Button
           onClick={handleRefresh}
@@ -102,7 +104,7 @@ export default function Home() {
         </Button>
           <Card className="w-full p-0">
             <CardContent className="p-0 h-[400px]">
-              {/* {settings.serverIp === "" ? (
+              {settings.serverIp === "" ? (
                 <div className="h-full w-full rounded bg-gray-800">
                   <div className="flex h-full items-center justify-center">
                     <div className="text-2xl font-bold text-secondary-foreground">
@@ -118,18 +120,10 @@ export default function Home() {
                   frameBorder="0"
                   title="Device Status"
                   ></iframe>
-              )} */}
+              )}
 
               <CoinTopUp />
 
-
-
-              <iframe
-                  ref={iframeRef}
-                  src="http://11.0.0.1/status"
-                  className="h-full w-full rounded"
-                  title="Device Status"
-                  ></iframe>              
             </CardContent>
           </Card>
         </div>

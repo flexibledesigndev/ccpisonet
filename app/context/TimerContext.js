@@ -7,6 +7,7 @@ const TimerContext = createContext();
 export function TimerProvider({ children }) {
 
   const [resetTimer, setResetTimer] = useState(false);
+  const [showWarning, setShowWarning] = useState(false);
 
   const [settings, setSettings] = useState({
     timerDuration: 180,
@@ -43,6 +44,28 @@ export function TimerProvider({ children }) {
     loadSettings();
   }, []);  
 
+
+  useEffect(() => {
+    if (resetTimer) return; // <-- also respect disabled timer
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        if (prev <= 0) {
+          clearInterval(timer);
+          invoke('shutdown_pc');
+          return 0;
+        }
+        if (prev === settings.warningTime) {
+          setShowWarning(true);
+          setTimeout(() => setShowWarning(false), 5000);
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [settings.warningTime, resetTimer]);
+
   const formatTime = (seconds) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -56,8 +79,9 @@ export function TimerProvider({ children }) {
       setTimeLeft,      
       settings, 
       setSettings,
-      setResetTimer, 
+      setResetTimer,
       formatTime,
+      showWarning,      
       remainingSeconds,
       setRemainingSeconds,
       connectionStatus,

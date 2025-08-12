@@ -1,25 +1,30 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useTimer } from '@/app/context/TimerContext';
 import { useRouter } from 'next/navigation';
 import { invoke } from "@tauri-apps/api/core";
 
 export default function CoinTopUp() {
   const router = useRouter();
+  const [warningMessage, setWarningMessage] = useState('');
   const { 
     formatTime, 
     connectionStatus, 
     setConnectionStatus,
     remainingSeconds,
-    setRemainingSeconds
+    setRemainingSeconds,
+    setResetTimer,
+    settings
   } = useTimer(); 
 
   useEffect(() => {
 
     async function getHTML() {
       try {
-        const html = await invoke("fetch_html", { url: "http://11.0.0.1/status" });       
+        if (!settings?.serverIp) return; // Wait until serverIp is ready
+        
+        const html = await invoke("fetch_html", { url: `http://${settings.serverIp}/status` });
         
         // Extract sessiontime from script
         const timeMatch = html.match(/var\s+sessiontime\s*=\s*"(\d+)"/i);
@@ -29,28 +34,32 @@ export default function CoinTopUp() {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         const statusText = doc.querySelector('#connectionStatus')?.textContent?.trim();
-
+        console.log("sdfjs"+html)
         setConnectionStatus(statusText || 'Disconnected');   
         
         // ✅ Control timer based on connection
         if (statusText === 'Connected') {
+          setResetTimer(true);
           if (parsedTime !== null) {
             setRemainingSeconds(parsedTime);
           }
         } else {
+          setResetTimer(false);
           setRemainingSeconds(null);
         }        
 
       } catch (err) {
         console.error('❌ Failed to fetch status.html:', err);
         setConnectionStatus('Error');
+        setResetTimer(false);
+        setWarningMessage("⚠️ Unable to connect to server. Please check your network.");
       }
     }
 
     getHTML();
     const interval = setInterval(getHTML, 1000); // ⏱️ every 1 second
     return () => clearInterval(interval);      
-  }, []);    
+  }, [settings.serverIp]);    
 
   // Countdown every 1 second
   useEffect(() => {
@@ -65,6 +74,7 @@ export default function CoinTopUp() {
 
   return (
     <div style={{ fontFamily: 'monospace', fontSize: '2rem', padding: '1rem' }}>
+      {warningMessage && <div className="text-red-500 text-sm">{warningMessage}</div>}
       {connectionStatus === 'Connected' ? (
         remainingSeconds !== null ? (
           <span>{connectionStatus}⏳ {formatTime(remainingSeconds)}</span>
