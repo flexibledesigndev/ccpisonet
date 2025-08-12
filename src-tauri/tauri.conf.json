@@ -16,6 +16,7 @@
         "decorations": false,
         "transparent": true,
         "center": true,
+        "alwaysOnTop": false,
         "resizable": false,
         "title": "Cara & Casey Pisonet",
         "width": 1024,

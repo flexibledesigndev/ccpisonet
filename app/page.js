@@ -7,9 +7,11 @@ import { useRef, useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import CoinTopUp from "@/components/CoinTopUp";
 import { useTimer } from "./context/TimerContext";
+import { useRouter } from "next/navigation";
 
 export default function Home() {
     const [pcName, setPcName] = useState("Loading...");
+    const router = useRouter();
 
     const{ formatTime, timeLeft } = useTimer();
 
@@ -37,6 +39,9 @@ export default function Home() {
       }
     }; 
 
+    const handleSettingsClick = () => {
+      router.push("/login");
+    };
   return (
     <main className="flex min-h-screen items-center justify-center text-white">
       <div className="mx-auto grid max-w-5xl grid-cols-2 gap-10">
@@ -48,7 +53,7 @@ export default function Home() {
 
           {/* Settings Icon */}
           <button
-            // onClick={handleSettingsClick}
+            onClick={handleSettingsClick}
             className="rounded-full bg-gray-800 p-3 transition-all duration-300 hover:scale-110 hover:bg-gray-700"
           >
             <Settings className="h-8 w-8 text-secondary" />
