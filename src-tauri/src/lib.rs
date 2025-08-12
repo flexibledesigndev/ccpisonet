@@ -2,11 +2,50 @@
 
 use std::fs;
 use serde_json::Value;
-use tauri::{AppHandle, Manager};
 
 use std::env;
-use std::process::{Command};
 use reqwest;
+
+use std::{
+    process::{Child, Command},
+    sync::Mutex,
+};
+use tauri::{AppHandle, Manager, State};
+use tauri::path::BaseDirectory;
+
+struct KeyBlockerState(Mutex<Option<Child>>);
+
+#[tauri::command]
+fn start_blocker(app_handle: AppHandle, state: tauri::State<'_, KeyBlockerState>) -> Result<(), String> {
+    let exe_path = app_handle
+        .path()
+        .resolve("keyblocker.exe", BaseDirectory::Resource)
+        .map_err(|e| e.to_string())?;
+
+    let child = Command::new(exe_path)
+        .spawn()
+        .map_err(|e| e.to_string())?;
+
+    *state.0.lock().unwrap() = Some(child);
+
+    Ok(())
+}
+
+// Stop the keyblocker.exe process
+#[tauri::command]
+fn stop_blocker(state: State<'_, KeyBlockerState>) -> Result<(), String> {
+    if let Some(mut child) = state.0.lock().unwrap().take() {
+        child.kill().map_err(|e| e.to_string())?;
+        println!("KeyBlocker stopped");
+    }
+    Ok(())
+}
+
+#[tauri::command]
+fn is_blocker_running(state: State<'_, KeyBlockerState>) -> bool {
+    state.0.lock().unwrap().is_some()
+}
+
 
 #[tauri::command]
 fn get_default_gateway() -> Option<String> {
@@ -113,14 +152,24 @@ fn save_settings(app_handle: AppHandle, settings: String) -> Result<(), String> 
 
 pub fn run() {
   tauri::Builder::default()
+    .manage(KeyBlockerState(std::sync::Mutex::new(None)))
     .invoke_handler(tauri::generate_handler![
         get_settings,
         save_settings,
         get_hostname, 
         shutdown_pc,
         fetch_html,
-        get_default_gateway
-      ])
+        get_default_gateway,
+        start_blocker,
+        stop_blocker,
+        is_blocker_running
+    ])
+    .on_window_event(|window, event| {
+        if let tauri::WindowEvent::CloseRequested { .. } = event {
+            let state = window.state::<KeyBlockerState>();
+            let _ = stop_blocker(state); // ignore errors
+        }
+    })    
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
 }
