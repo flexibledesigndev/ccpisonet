@@ -6,6 +6,8 @@
     "main"
   ],
   "permissions": [
-    "core:default"
+    "core:default",
+    "core:window:allow-set-always-on-top",
+    "core:window:allow-set-fullscreen"
   ]
 }

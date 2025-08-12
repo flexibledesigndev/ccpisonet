@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 // import { invoke } from "@tauri-apps/api/core";
 import { useTimer } from "@/app/context/TimerContext";
 
+
+
 export function useAppGlobalEffects() {
 
-    // const [tauriWindow, setTauriWindow] = useState(null);
+    const [tauriWindow, setTauriWindow] = useState(null);
 
     const { setTimeLeft, settings, connectionStatus } = useTimer();
 
@@ -16,62 +18,59 @@ export function useAppGlobalEffects() {
           setTimeLeft(settings.timerDuration);
         }
       }, [connectionStatus, setTimeLeft, settings.timerDuration]);    
-
-    // Load Tauri window API only in client
-    // useEffect(() => {
-    //   (async () => {
-    //     const { getCurrent } = await import('@tauri-apps/api/window');
-    //     setTauriWindow(getCurrent());
-    //   })();
-    // }, []);
     
+      useEffect(() => {
+        (async () => {
+          const { Window } = await import('@tauri-apps/api/window');
+          setTauriWindow(Window.getCurrent());
+        })();
+      }, []);      
     
   // Blocker control effect
-  // useEffect(() => {
-  //   if (!tauriWindow) return;
+  useEffect(() => {
+    if (!tauriWindow) return;
 
-  //   const stopBlocker = async () => {
-  //     try {
-  //       if (connectionStatus === "Connected") {
-  //         // await invoke("stop_blocker");
-  //       //   await tauriWindow.setAlwaysOnTop(false);
-  //       //   await tauriWindow.setFullscreen(false); 
-  //       // await invoke("start_windowscc");         
-  //       } else {
-  //         // await invoke("start_blocker");
-  //       //   await tauriWindow.setAlwaysOnTop(true);
-  //       //   await tauriWindow.setFullscreen(true);
-  //       // await invoke("stop_windowscc");
-  //       }
-  //     } catch (error) {
-  //       console.error("Failed to stop/start blocker:", error);
-  //     }
-  //   };
+    const stopBlocker = async () => {
+      try {
+        if (connectionStatus === "Connected") {
+          await tauriWindow.setAlwaysOnTop(false);
+          await tauriWindow.setFullscreen(false); 
+        // await invoke("start_windowscc");         
+        } else {
+          // await invoke("start_blocker");
+          await tauriWindow.setAlwaysOnTop(true);
+          await tauriWindow.setFullscreen(true);
+        // await invoke("stop_windowscc");
+        }
+      } catch (error) {
+        console.error("Failed to stop/start blocker:", error);
+      }
+    };
 
-  //   stopBlocker();
-  // }, [connectionStatus, tauriWindow]);
+    stopBlocker();
+  }, [connectionStatus, tauriWindow]);
 
   // Disable refresh keys & right-click
-//   useEffect(() => {
-//     const handleKeyDown = (e) => {
-//       if (
-//         e.key === "F5" ||
-//         ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")
-//       ) {
-//         e.preventDefault();
-//       }
-//     };
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (
+        e.key === "F5" ||
+        ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "r")
+      ) {
+        e.preventDefault();
+      }
+    };
 
-//     const handleContextMenu = (e) => {
-//       e.preventDefault();
-//     };
+    const handleContextMenu = (e) => {
+      e.preventDefault();
+    };
 
-//     window.addEventListener("keydown", handleKeyDown);
-//     window.addEventListener("contextmenu", handleContextMenu);
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("contextmenu", handleContextMenu);
 
-//     return () => {
-//       window.removeEventListener("keydown", handleKeyDown);
-//       window.removeEventListener("contextmenu", handleContextMenu);
-//     };
-//   }, []);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("contextmenu", handleContextMenu);
+    };
+  }, []);
 }
