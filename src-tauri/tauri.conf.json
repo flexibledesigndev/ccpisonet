@@ -12,11 +12,11 @@
   "app": {
     "windows": [
       {
-        "fullscreen": false,
+        "fullscreen": true,
         "decorations": false,
         "transparent": true,
         "center": true,
-        "alwaysOnTop": false,
+        "alwaysOnTop": true,
         "resizable": false,
         "title": "Cara & Casey Pisonet",
         "width": 1024,

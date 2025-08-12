@@ -22,7 +22,7 @@ export function TimerProvider({ children }) {
     logoText: 'Cara & Casey Pisonet',
     logoImage: '/CaseyCara-logo.png',
     relaunchOnClose: true,
-    serverIp: '192.168.3.1'
+    serverIp: '11.0.0.1'
   });
 
   // ✅ Add connectionStatus and remainingSeconds

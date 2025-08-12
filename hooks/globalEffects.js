@@ -9,6 +9,7 @@ import { useTimer } from "@/app/context/TimerContext";
 export function useAppGlobalEffects() {
 
     const [tauriWindow, setTauriWindow] = useState(null);
+    const [LogicalSize, setLogicalSize] = useState(null);
 
     const { setTimeLeft, settings, connectionStatus } = useTimer();
 
@@ -21,14 +22,15 @@ export function useAppGlobalEffects() {
     
       useEffect(() => {
         (async () => {
-          const { Window } = await import('@tauri-apps/api/window');
+          const { Window, LogicalSize } = await import("@tauri-apps/api/window");
           setTauriWindow(Window.getCurrent());
+          setLogicalSize(() => LogicalSize); // store class in state
         })();
-      }, []);      
+      }, []);     
     
   // Blocker control effect
   useEffect(() => {
-    if (!tauriWindow) return;
+    if (!tauriWindow || !LogicalSize) return;
 
     const stopBlocker = async () => {
       try {
@@ -36,7 +38,9 @@ export function useAppGlobalEffects() {
           await tauriWindow.setAlwaysOnTop(false);
           await tauriWindow.setFullscreen(false); 
           await invoke("start_windowscc");
-          await invoke("stop_blocker");            
+          await invoke("stop_blocker");     
+          await tauriWindow.setSize(new LogicalSize(1024, 768));
+          await tauriWindow.center();                 
         } else {
           await tauriWindow.setAlwaysOnTop(true);
           await tauriWindow.setFullscreen(true);
@@ -49,7 +53,7 @@ export function useAppGlobalEffects() {
     };
 
     stopBlocker();
-  }, [connectionStatus, tauriWindow]);
+  }, [connectionStatus, tauriWindow, LogicalSize]);
 
   // Disable refresh keys & right-click
   useEffect(() => {

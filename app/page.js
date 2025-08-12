@@ -68,7 +68,7 @@ export default function Home() {
                 <div className="text-xl text-secondary-foreground">
                   This computer will shutdown in:
                 </div>
-                <div className="font-mono text-6xl font-bold tracking-wider text-secondary-foreground">
+                <div className="font-mono text-6xl font-bold tracking-wider text-primary">
                   {formatTime(timeLeft)}
                 </div>
               </div>
