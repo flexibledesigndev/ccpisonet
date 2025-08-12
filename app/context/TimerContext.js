@@ -18,11 +18,11 @@ export function TimerProvider({ children }) {
     username: 'admin',
     password: 'admin',
     repeatPassword: "admin",
-    logoType: 'text',
-    logoText: 'Cara & Cassey Pisonet',
-    logoImage: null,
+    logoType: 'image',
+    logoText: 'Cara & Casey Pisonet',
+    logoImage: '/CaseyCara-logo.png',
     relaunchOnClose: true,
-    serverIp: '',
+    serverIp: '192.168.3.1'
   });
 
   // ✅ Add connectionStatus and remainingSeconds

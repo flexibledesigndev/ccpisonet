@@ -171,9 +171,6 @@ fn get_settings(app_handle: AppHandle) -> Result<String, String> {
 
 #[tauri::command]
 fn save_settings(app_handle: AppHandle, settings: String) -> Result<(), String> {
-    // Validate JSON
-    let settings_json: Value = serde_json::from_str(&settings)
-        .map_err(|e| format!("Invalid settings format: {}", e))?;
 
     let app_dir = app_handle
         .path()
@@ -187,22 +184,6 @@ fn save_settings(app_handle: AppHandle, settings: String) -> Result<(), String> 
     let settings_path = app_dir.join("settings.json");
     fs::write(settings_path, settings)
         .map_err(|e| format!("Failed to save settings: {}", e))?;
-
-    // Update window settings
-    if let Some(window) = app_handle.get_webview_window("main") {
-        let allow_minimize = settings_json
-            .get("allowMinimize")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(false);
-
-        let always_on_top = settings_json
-            .get("alwaysOnTop")
-            .and_then(|v| v.as_bool())
-            .unwrap_or(true);
-
-        let _ = window.set_minimizable(allow_minimize);
-        let _ = window.set_always_on_top(always_on_top);
-    }
 
     Ok(())
 }

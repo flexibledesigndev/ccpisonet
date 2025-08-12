@@ -79,7 +79,7 @@ export default function CoinTopUp() {
   }, [remainingSeconds]);  
 
   return (
-    <div className="pt-5 text-5xl font-bold text-center">
+    <div className="pt-5 text-xl font-bold text-center">
       {warningMessage && <div className="text-red-500 text-sm">{warningMessage}</div>}
       {connectionStatus === 'Connected' ? (
         remainingSeconds !== null ? (

@@ -15,7 +15,7 @@ export default function Home() {
 
     useAppGlobalEffects();
 
-    const{ formatTime, timeLeft, settings, showWarning, pcName, gateway } = useTimer();
+    const{ formatTime, timeLeft, settings, showWarning, pcName } = useTimer();
 
     const iframeRef = useRef(null);
   
@@ -30,7 +30,23 @@ export default function Home() {
       router.push("/login");
     };
   return (
-    <main className="flex min-h-screen items-center justify-center text-white">
+    <main className="flex flex-col min-h-screen items-center gap-20 justify-center text-white">
+      <div className="text-center">
+          {/* Brand Name/Logo */}
+          <div className="text-5xl uppercase font-bold tracking-wider text-secondary-foreground">
+            {settings.logoType === "text" ? (
+              settings.logoText
+            ) : settings.logoImage ? (
+              <img
+                src={settings.logoImage}
+                alt="Logo"
+                className="max-h-32 object-contain"
+              />
+            ) : (
+              "Cara & Casey Pisonet"
+            )}
+          </div>        
+      </div>
       <div className="mx-auto grid max-w-5xl grid-cols-2 gap-10">
         <div className="flex flex-col items-center space-y-8">
           {/* PC Name */}
@@ -66,20 +82,6 @@ export default function Home() {
           )}
         </div>
         <div className="flex flex-col items-center space-y-4">
-          {/* Brand Name/Logo */}
-          <div className="text-3xl font-bold tracking-wider text-secondary-foreground">
-            {settings.logoType === "text" ? (
-              settings.logoText
-            ) : settings.logoImage ? (
-              <img
-                src={settings.logoImage}
-                alt="Logo"
-                className="max-h-32 object-contain"
-              />
-            ) : (
-              "Cara & Cassey Pisonet"
-            )}
-          </div>
           <Button
           onClick={handleRefresh}
         >
