@@ -21,6 +21,19 @@ struct WindowsCCState(Mutex<Option<Child>>);
 
 #[tauri::command]
 fn start_blocker(app_handle: AppHandle, state: tauri::State<'_, KeyBlockerState>) -> Result<(), String> {
+    let mut guard = state.0.lock().unwrap();
+
+    // Check if a child process is already running
+    if let Some(child) = &mut *guard {
+        // Check if child is still running
+        if let Ok(Some(_)) = child.try_wait() {
+            // Process has exited, so we can spawn a new one
+        } else {
+            // Process is still running, don't spawn duplicate
+            return Ok(());
+        }
+    }
+
     let exe_path = app_handle
         .path()
         .resolve("keyblocker.exe", BaseDirectory::Resource)
@@ -33,28 +46,37 @@ fn start_blocker(app_handle: AppHandle, state: tauri::State<'_, KeyBlockerState>
         .spawn()
         .map_err(|e| e.to_string())?;
 
-    *state.0.lock().unwrap() = Some(child);
+    *guard = Some(child);
 
     Ok(())
 }
+
 
 // Stop the keyblocker.exe process
 #[tauri::command]
 fn stop_blocker(state: State<'_, KeyBlockerState>) -> Result<(), String> {
     if let Some(mut child) = state.0.lock().unwrap().take() {
         child.kill().map_err(|e| e.to_string())?;
-        println!("KeyBlocker stopped");
     }
     Ok(())
 }
 
-#[tauri::command]
-fn is_blocker_running(state: State<'_, KeyBlockerState>) -> bool {
-    state.0.lock().unwrap().is_some()
-}
 
 #[tauri::command]
 fn start_windowscc(app_handle: AppHandle, state: tauri::State<'_, WindowsCCState>) -> Result<(), String> {
+    let mut guard = state.0.lock().unwrap();
+
+    // Check if a child process is already running
+    if let Some(child) = &mut *guard {
+        // Check if child is still running
+        if let Ok(Some(_)) = child.try_wait() {
+            // Process has exited, so we can spawn a new one
+        } else {
+            // Process is still running, don't spawn duplicate
+            return Ok(());
+        }
+    }
+
     let exe_path = app_handle
         .path()
         .resolve("windowsCC.exe", BaseDirectory::Resource)
@@ -67,16 +89,16 @@ fn start_windowscc(app_handle: AppHandle, state: tauri::State<'_, WindowsCCState
         .spawn()
         .map_err(|e| e.to_string())?;
 
-    *state.0.lock().unwrap() = Some(child);
+    *guard = Some(child);
 
     Ok(())
 }
+
 
 #[tauri::command]
 fn stop_windowscc(state: State<'_, WindowsCCState>) -> Result<(), String> {
     if let Some(mut child) = state.0.lock().unwrap().take() {
         child.kill().map_err(|e| e.to_string())?;
-        println!("WindowsCC stopped");
     }
     Ok(())
 }
@@ -198,7 +220,6 @@ pub fn run() {
         get_default_gateway,
         start_blocker,
         stop_blocker,
-        is_blocker_running,
         start_windowscc,
         stop_windowscc
     ])
