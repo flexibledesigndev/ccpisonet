@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useTimer } from '@/app/context/TimerContext';
+import { invoke } from "@tauri-apps/api/core";
 
 export default function CoinTopUp() {
   const [warningMessage, setWarningMessage] = useState('');
@@ -17,33 +18,25 @@ export default function CoinTopUp() {
   } = useTimer(); 
 
   useEffect(() => {
+
     async function getHTML() {
       try {
         if (!settings?.serverIp) return; // Wait until serverIp is ready
-
-        // ✅ Only fetch if gateway matches server IP
-        if (gateway !== settings.serverIp) {
-          setWarningMessage("⚠️ Not connected to the correct network.");
-          setConnectionStatus('Disconnected');
-          setResetTimer(false);
-          setRemainingSeconds(null);
-          return;
-        }
-
-        // ✅ Fetch HTML from server
+        
         const html = await invoke("fetch_html", { url: `http://${settings.serverIp}/status` });
-
-        // Extract session time
+        
+        // Extract sessiontime from script
         const timeMatch = html.match(/var\s+sessiontime\s*=\s*"(\d+)"/i);
         const parsedTime = timeMatch ? parseInt(timeMatch[1], 10) : null;        
         
-        // Extract connection status
+        // Extract connection status from DOM
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
         const statusText = doc.querySelector('#connectionStatus')?.textContent?.trim();
-
+        console.log("sdfjs"+html)
         setConnectionStatus(statusText || 'Disconnected');   
-
+        
+        // ✅ Control timer based on connection
         if (statusText === 'Connected') {
           setResetTimer(true);
           if (parsedTime !== null) {
@@ -52,9 +45,7 @@ export default function CoinTopUp() {
         } else {
           setResetTimer(false);
           setRemainingSeconds(null);
-        }
-
-        setWarningMessage(''); // Clear warning if connected
+        }        
 
       } catch (err) {
         console.error('❌ Failed to fetch status.html:', err);
@@ -81,7 +72,7 @@ export default function CoinTopUp() {
   }, [connectionStatus, remainingSeconds]);
 
   return (
-    <div style={{ fontFamily: 'monospace', fontSize: '1.5rem', padding: '1rem' }}>
+    <div className="pt-5 text-5xl font-bold text-center">
       {warningMessage && <div className="text-red-500 text-sm">{warningMessage}</div>}
       {connectionStatus === 'Connected' ? (
         remainingSeconds !== null ? (

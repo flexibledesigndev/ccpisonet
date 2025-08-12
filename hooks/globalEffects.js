@@ -33,13 +33,13 @@ export function useAppGlobalEffects() {
     const stopBlocker = async () => {
       try {
         if (connectionStatus === "Connected") {
-          await tauriWindow.setAlwaysOnTop(false);
-          await tauriWindow.setFullscreen(false); 
+          // await tauriWindow.setAlwaysOnTop(false);
+          // await tauriWindow.setFullscreen(false); 
         // await invoke("start_windowscc");         
         } else {
           // await invoke("start_blocker");
-          await tauriWindow.setAlwaysOnTop(true);
-          await tauriWindow.setFullscreen(true);
+          // await tauriWindow.setAlwaysOnTop(true);
+          // await tauriWindow.setFullscreen(true);
         // await invoke("stop_windowscc");
         }
       } catch (error) {
