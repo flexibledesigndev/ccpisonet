@@ -71,6 +71,13 @@ export default function CoinTopUp() {
     return () => clearInterval(interval);
   }, [connectionStatus, remainingSeconds]);
 
+  useEffect(() => {
+    if (remainingSeconds === 60) {
+      const audio = new Audio('/minute-warning.mp3');
+      audio.play().catch(err => console.error(err));
+    }
+  }, [remainingSeconds]);  
+
   return (
     <div className="pt-5 text-5xl font-bold text-center">
       {warningMessage && <div className="text-red-500 text-sm">{warningMessage}</div>}
