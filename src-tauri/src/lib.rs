@@ -9,6 +9,28 @@ use std::process::{Command};
 use reqwest;
 
 #[tauri::command]
+fn get_default_gateway() -> Option<String> {
+    let output = Command::new("ipconfig")
+        .output()
+        .ok()?;
+
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    for line in stdout.lines() {
+        if line.trim().starts_with("Default Gateway") {
+            let parts: Vec<&str> = line.split(':').collect();
+            if parts.len() > 1 {
+                let gateway = parts[1].trim();
+                if !gateway.is_empty() {
+                    return Some(gateway.to_string());
+                }
+            }
+        }
+    }
+    None
+}
+
+#[tauri::command]
 fn fetch_html(url: String) -> Result<String, String> {
     reqwest::blocking::get(&url)
         .and_then(|resp| resp.text())
@@ -96,7 +118,8 @@ pub fn run() {
         save_settings,
         get_hostname, 
         shutdown_pc,
-        fetch_html
+        fetch_html,
+        get_default_gateway
       ])
     .run(tauri::generate_context!())
     .expect("error while running tauri application");

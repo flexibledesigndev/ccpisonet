@@ -3,37 +3,21 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { RefreshCcw, Settings } from "lucide-react";
-import { useRef, useEffect, useState } from "react";
-import { invoke } from "@tauri-apps/api/core";
+import { useRef } from "react";
 import CoinTopUp from "@/components/CoinTopUp";
 import { useTimer } from "./context/TimerContext";
 import { useRouter } from "next/navigation";
 import { useAppGlobalEffects } from "@/hooks/globalEffects";
 
 export default function Home() {
-    const [pcName, setPcName] = useState("Loading...");
+  
     const router = useRouter();
 
     useAppGlobalEffects();
 
-    const{ formatTime, timeLeft, settings, showWarning } = useTimer();
+    const{ formatTime, timeLeft, settings, showWarning, pcName, gateway } = useTimer();
 
     const iframeRef = useRef(null);
-
-    useEffect(() => {
-      // Get PC name
-      const getPCName = async () => {
-        try {
-          const hostname = await invoke("get_hostname");
-          setPcName(hostname);
-        } catch (error) {
-          console.error("Failed to get hostname:", error);
-          setPcName("Unknown PC");
-        }
-      };
-  
-      getPCName();
-    }, []);    
   
     const handleRefresh = () => {
       if (iframeRef.current) {

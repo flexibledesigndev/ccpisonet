@@ -5,9 +5,12 @@ import { invoke } from "@tauri-apps/api/core";
 const TimerContext = createContext();
 
 export function TimerProvider({ children }) {
+  const [pcName, setPcName] = useState("Loading...");
+  const [gateway, setGateway] = useState(null);
 
   const [resetTimer, setResetTimer] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
+  
 
   const [settings, setSettings] = useState({
     timerDuration: 180,
@@ -72,9 +75,40 @@ export function TimerProvider({ children }) {
     return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
   };
 
+  useEffect(() => {
+    // Get PC name
+    const getPCName = async () => {
+      try {
+        const hostname = await invoke("get_hostname");
+        setPcName(hostname);
+      } catch (error) {
+        console.error("Failed to get hostname:", error);
+        setPcName("Unknown PC");
+      }
+    };
+
+    getPCName();
+  }, []);    
+
+  useEffect(() => {
+    async function fetchGateway() {
+      try {
+        const result = await invoke("get_default_gateway");
+        setGateway(result || "Not found");
+      } catch (error) {
+        console.error("Failed to get gateway:", error);
+        setGateway("Error");
+      }
+    }
+
+    fetchGateway();
+  }, []);   
+
 
   return (
-    <TimerContext.Provider value={{ 
+    <TimerContext.Provider value={{
+      pcName,
+      gateway,
       timeLeft, 
       setTimeLeft,      
       settings, 
