@@ -20,9 +20,9 @@ export function TimerProvider({ children }) {
     repeatPassword: "admin",
     logoType: 'image',
     logoText: 'Cara & Casey Pisonet',
-    logoImage: '/CaseyCara-logo.png',
+    logoImage: null,
     relaunchOnClose: true,
-    serverIp: '11.0.0.1'
+    serverIp: '192.168.3.1'
   });
 
   // ✅ Add connectionStatus and remainingSeconds
