@@ -6,7 +6,6 @@ const TimerContext = createContext();
 
 export function TimerProvider({ children }) {
   const [pcName, setPcName] = useState("Loading...");
-  const [gateway, setGateway] = useState(null);
 
   const [resetTimer, setResetTimer] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
@@ -14,7 +13,7 @@ export function TimerProvider({ children }) {
 
   const [settings, setSettings] = useState({
     timerDuration: 180,
-    warningTime: 30,
+    warningTime: 60,
     username: 'admin',
     password: 'admin',
     repeatPassword: "admin",
@@ -90,25 +89,10 @@ export function TimerProvider({ children }) {
     getPCName();
   }, []);    
 
-  useEffect(() => {
-    async function fetchGateway() {
-      try {
-        const result = await invoke("get_default_gateway");
-        setGateway(result || "Not found");
-      } catch (error) {
-        console.error("Failed to get gateway:", error);
-        setGateway("Error");
-      }
-    }
-
-    fetchGateway();
-  }, []);   
-
 
   return (
     <TimerContext.Provider value={{
       pcName,
-      gateway,
       timeLeft, 
       setTimeLeft,      
       settings, 

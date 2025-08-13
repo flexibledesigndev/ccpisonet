@@ -102,7 +102,7 @@ export default function Home() {
         <div className="flex flex-col items-center space-y-4">
           <CoinTopUp />
           <Card className="w-full p-0">
-            <CardContent className="p-0 h-[400px]">
+            <CardContent className="p-0 h-[500px]">
               {settings.serverIp === "" ? (
                 <div className="h-full w-full rounded bg-gray-800">
                   <div className="flex h-full items-center justify-center">

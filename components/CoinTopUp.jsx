@@ -40,6 +40,10 @@ export default function CoinTopUp() {
         setResetTimer(false);
         setRemainingSeconds(null);
       }
+    } else {
+      setConnectionStatus('Disconnected');
+      setResetTimer(false);
+      setRemainingSeconds(null);
     }
   }, [connected, html, setConnectionStatus, setResetTimer, setRemainingSeconds]);
 
@@ -63,6 +67,7 @@ export default function CoinTopUp() {
   return (
     <div className="pt-5 text-secondary-foreground space-y-4 text-center">
       <div className='space-y-1'>
+        {settings.serverIp === "" && <p>Server IP is not set</p>}
         {loading && <p>Checking server connection...</p>}
         {connected === false && (
           <div className='space-y-1'>
