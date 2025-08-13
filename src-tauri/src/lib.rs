@@ -127,10 +127,27 @@ fn get_default_gateway() -> Option<String> {
 }
 
 #[tauri::command]
-fn fetch_html(url: String) -> Result<String, String> {
-    reqwest::blocking::get(&url)
-        .and_then(|resp| resp.text())
-        .map_err(|e| e.to_string())
+async fn fetch_html(url: String) -> Result<String, String> {
+    use reqwest::Client;
+    use std::time::Duration;
+
+    let client = Client::builder()
+        .timeout(Duration::from_secs(5)) // timeout for slow connections
+        .build()
+        .map_err(|e| e.to_string())?;
+
+    let res = client.get(&url)
+        .send()
+        .await
+        .map_err(|e| format!("Network error: {}", e))?;
+
+    if !res.status().is_success() {
+        return Err(format!("HTTP error: {}", res.status()));
+    }
+
+    res.text()
+        .await
+        .map_err(|e| format!("Failed to read body: {}", e))
 }
 
 #[tauri::command]
