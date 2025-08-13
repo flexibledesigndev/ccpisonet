@@ -199,6 +199,9 @@ pub fn run() {
     ])
     .on_window_event(|window, event| {
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {
+            // Always block closing
+            api.prevent_close();
+
             let state = window.state::<KeyBlockerState>();
             let _ = stop_blocker(state); // ignore errors          
             
