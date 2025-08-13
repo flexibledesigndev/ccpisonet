@@ -65,17 +65,7 @@ export default function CoinTopUp() {
   }, [remainingSeconds]);    
 
   return (
-    <div className="pt-5 text-secondary-foreground space-y-4 text-center">
-      <div className='space-y-1'>
-        {settings.serverIp === "" && <p>Server IP is not set</p>}
-        {loading && <p>Checking server connection...</p>}
-        {connected === false && (
-          <div className='space-y-1'>
-            <p style={{ color: "red" }}>❌ Disconnected</p>
-            <Button onClick={retry} disabled={loading}>Retry Now</Button>
-          </div>
-        )}        
-      </div>
+    <div className="pt-3 text-secondary-foreground space-y-4 text-center">
       <div className='font-bold'>
         {connectionStatus === 'Connected' && (
           remainingSeconds !== null ? (
@@ -86,6 +76,16 @@ export default function CoinTopUp() {
             <span>Loading session time...</span>
           )
         )}
+      </div>      
+      <div className='space-y-1'>
+        {settings.serverIp === "" && <p>Server IP is not set</p>}
+        {loading && <p>Checking server connection...</p>}
+        {connected === false && (
+          <div className='space-y-1'>
+            <p style={{ color: "red" }}>❌ Disconnected</p>
+            <Button onClick={retry} disabled={loading}>Retry Now</Button>
+          </div>
+        )}        
       </div>
     </div>
   );

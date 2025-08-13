@@ -8,6 +8,7 @@ import CoinTopUp from "@/components/CoinTopUp";
 import { useTimer } from "./context/TimerContext";
 import { useRouter } from "next/navigation";
 import { useAppGlobalEffects } from "@/hooks/globalEffects";
+import Logo from "@/components/Logo";
 
 export default function Home() {
   
@@ -31,28 +32,8 @@ export default function Home() {
     };
   return (
     <main className="flex flex-col min-h-screen items-center gap-10 pt-5 justify-center text-white">
-      <div className="text-center">
-          {/* Brand Name/Logo */}
-          <div className="text-5xl uppercase font-black tracking-wider text-secondary-foreground">
-            {settings.logoType === "text" ? (
-              settings.logoText
-            ) : settings.logoImage ? (
-              <img
-                src={settings.logoImage}
-                alt="Logo"
-                className="max-h-32 object-contain"
-              />
-             
-            ) : (
-                <img
-                src="/CaseyCara-logo.png"
-                alt="Logo"
-                className="max-h-32 object-contain"
-              />
-            )}
-          </div>        
-      </div>
-      <div className="mx-auto grid w-lg grid-cols-1">
+      <Logo />
+      <div className="mx-auto grid w-3xl grid-cols-2">
         <div className="flex flex-col items-center space-y-4">
           {/* PC Name */}
           <div className="text-4xl text-center font-bold tracking-wider text-secondary-foreground">
@@ -60,15 +41,17 @@ export default function Home() {
           </div>
 
           {/* Settings Icon */}
-          <div className="grid grid-cols-2 gap-3">
+          <div className="flex gap-3">
+            {
+                (connectionStatus != 'Connected') && <>
+                    <Button onClick={handleSettingsClick}>
+                      <Settings className="h-4 w-4" />
+                    </Button>
+                </> 
+              }
               <Button
-                onClick={handleSettingsClick}
+                onClick={handleRefresh}
               >
-                <Settings className="h-4 w-4" />
-              </Button>
-              <Button
-              onClick={handleRefresh}
-            >
               <RefreshCcw className="h-4 w-4" />
             </Button>             
           </div>
@@ -96,13 +79,14 @@ export default function Home() {
             </> 
           }
 
+          <CoinTopUp />
+
         </div>
 
 
         <div className="flex flex-col items-center space-y-4">
-          <CoinTopUp />
           <Card className="w-full p-0">
-            <CardContent className="p-0 h-[500px]">
+            <CardContent className="p-0 h-[470px]">
               {settings.serverIp === "" ? (
                 <div className="h-full w-full rounded bg-gray-800">
                   <div className="flex h-full items-center justify-center">

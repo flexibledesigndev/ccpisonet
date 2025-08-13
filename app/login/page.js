@@ -3,6 +3,7 @@ import { useState } from "react";
 import { useTimer } from "../context/TimerContext";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import Logo from "@/components/Logo";
 
 export default function LoginPage() {
   const [username, setUsername] = useState("");
@@ -43,20 +44,7 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-8 rounded-lg bg-white p-6">     
-            {/* Logo/Brand */}
-            <div className="text-center">
-              {settings.logoType === "text" ? (
-                <h1 className="text-3xl font-bold text-secondary-foreground">
-                  {settings.logoText}
-                </h1>
-              ) : (
-                <img
-                  src={settings.logoImage}
-                  alt="Logo"
-                  className="mx-auto h-24"
-                />
-              )}
-            </div>
+            <Logo />
 
             {/* Login Form */}
             <form onSubmit={handleLogin} className="space-y-6">
