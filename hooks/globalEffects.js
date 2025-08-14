@@ -39,7 +39,7 @@ export function useAppGlobalEffects() {
           await tauriWindow.setFullscreen(false); 
           await invoke("start_windowscc");
           await invoke("stop_blocker");     
-          await tauriWindow.setSize(new LogicalSize(1024, 768));
+          await tauriWindow.setSize(new LogicalSize(400, 760));
           await tauriWindow.center();                 
         } else {
           await tauriWindow.setAlwaysOnTop(true);

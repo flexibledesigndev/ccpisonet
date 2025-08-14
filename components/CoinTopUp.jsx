@@ -18,7 +18,7 @@ export default function CoinTopUp() {
 
   const { data: html, error, loading, connected, retry } = useTauriFetch(
     `http://${settings.serverIp}/status`,
-    { retries: 3, retryDelay: 500, pollInterval: 5000 }
+    { retries: 3, retryDelay: 500, pollInterval: 2000 }
   );
 
   // ✅ Parse connection status only when html/connected changes
@@ -70,7 +70,7 @@ export default function CoinTopUp() {
         {connectionStatus === 'Connected' && (
           remainingSeconds !== null ? (
             <>
-              ⏳ Session time: <span className='text-6xl block mt-2'>{formatTime(remainingSeconds)}</span>
+              ⏳ Session time: <span className='text-6xl block mt-2 font-mono'>{formatTime(remainingSeconds)}</span>
             </>
           ) : (
             <span>Loading session time...</span>
@@ -79,11 +79,11 @@ export default function CoinTopUp() {
       </div>      
       <div className='space-y-1'>
         {settings.serverIp === "" && <p>Server IP is not set</p>}
-        {loading && <p>Checking server connection...</p>}
+        {/* {loading && <p>Checking server connection...</p>} */}
         {connected === false && (
           <div className='space-y-1'>
             <p style={{ color: "red" }}>❌ Disconnected</p>
-            <Button onClick={retry} disabled={loading}>Retry Now</Button>
+            <Button onClick={retry} disabled={loading}>Reconnect Now</Button>
           </div>
         )}        
       </div>

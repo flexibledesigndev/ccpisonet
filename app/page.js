@@ -31,9 +31,11 @@ export default function Home() {
       router.push("/login");
     };
   return (
-    <main className="flex flex-col min-h-screen items-center gap-10 pt-5 justify-center text-white">
+    <main className={`flex flex-col min-h-screen items-center 
+    ${(connectionStatus === 'Connected') ? "gap-5 px-2" : "gap-10"} 
+    py-5 justify-center text-white`}>
       <Logo />
-      <div className="mx-auto grid w-3xl grid-cols-2">
+      <div className={`mx-auto grid ${(connectionStatus === 'Connected') ? "w-full grid-cols-1" : "w-3xl grid-cols-2"}`} >
         <div className="flex flex-col items-center space-y-4">
           {/* PC Name */}
           <div className="text-4xl text-center font-bold tracking-wider text-secondary-foreground">
@@ -64,7 +66,7 @@ export default function Home() {
                         <div className="text-xl text-secondary-foreground">
                           This computer will shutdown in:
                         </div>
-                        <div className="font-mono text-6xl font-bold tracking-wider text-primary">
+                        <div className="font-mono text-6xl font-bold text-primary">
                           {formatTime(timeLeft)}
                         </div>
                       </div>
@@ -86,7 +88,7 @@ export default function Home() {
 
         <div className="flex flex-col items-center space-y-4">
           <Card className="w-full p-0">
-            <CardContent className="p-0 h-[470px]">
+            <CardContent className={`p-0 ${(connectionStatus === 'Connected') ? "h-[320px]" : "h-[470px]"}`}>
               {settings.serverIp === "" ? (
                 <div className="h-full w-full rounded bg-gray-800">
                   <div className="flex h-full items-center justify-center">
