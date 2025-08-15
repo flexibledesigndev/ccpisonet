@@ -1,7 +1,7 @@
 import { useTimer } from "@/app/context/TimerContext";
 
 export default function Logo() {
-    const { settings } = useTimer();
+    const { settings, connectionStatus } = useTimer();
     return (
         <div className="flex justify-center">
         {/* Brand Name/Logo */}
@@ -12,14 +12,14 @@ export default function Logo() {
             <img
               src={settings.logoImage}
               alt="Logo"
-              className="max-h-32 object-contain"
+              className={`${(connectionStatus === 'Connected') ? 'max-h-22': 'max-h-32'} object-contain`}
             />
            
           ) : (
               <img
               src="/CaseyCara-logo.png"
               alt="Logo"
-              className="max-h-32 object-contain"
+              className={`${(connectionStatus === 'Connected') ? 'max-h-22': 'max-h-32'} object-contain`}
             />
           )}
         </div>        

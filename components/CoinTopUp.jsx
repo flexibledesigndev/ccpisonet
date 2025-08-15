@@ -65,12 +65,12 @@ export default function CoinTopUp() {
   }, [remainingSeconds]);    
 
   return (
-    <div className="pt-3 text-secondary-foreground space-y-4 text-center">
+    <div className="pt-2 text-xs text-secondary-foreground space-y-4 text-center">
       <div className='font-bold'>
         {connectionStatus === 'Connected' && (
           remainingSeconds !== null ? (
             <>
-              ⏳ Session time: <span className='text-6xl block mt-2 font-mono'>{formatTime(remainingSeconds)}</span>
+              ⏳ Session time: <span className='text-2xl block mt-2 font-mono'>{formatTime(remainingSeconds)}</span>
             </>
           ) : (
             <span>Loading session time...</span>

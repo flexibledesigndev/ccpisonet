@@ -32,13 +32,13 @@ export default function Home() {
     };
   return (
     <main className={`flex flex-col min-h-screen items-center 
-    ${(connectionStatus === 'Connected') ? "gap-5 px-2" : "gap-10"} 
+    ${(connectionStatus === 'Connected') ? "gap-2 px-2 py-0" : "gap-10"} 
     py-5 justify-center text-white`}>
       <Logo />
       <div className={`mx-auto grid ${(connectionStatus === 'Connected') ? "w-full grid-cols-1" : "w-3xl grid-cols-2"}`} >
-        <div className="flex flex-col items-center space-y-4">
+        <div className={`flex flex-col items-center  ${(connectionStatus === 'Connected') ? "space-y-2" : "space-y-4"}`}>
           {/* PC Name */}
-          <div className="text-4xl text-center font-bold tracking-wider text-secondary-foreground">
+          <div className={`text-center font-bold tracking-wider text-secondary-foreground ${(connectionStatus === 'Connected') ? "text-lg" : "text-4xl"}`}>
             {pcName}
           </div>
 
@@ -46,15 +46,19 @@ export default function Home() {
           <div className="flex gap-3">
             {
                 (connectionStatus != 'Connected') && <>
-                    <Button onClick={handleSettingsClick}>
-                      <Settings className="h-4 w-4" />
+                    <Button 
+                      onClick={handleSettingsClick}
+                      size="icon"
+                    >
+                      <Settings className="h-2 w-2" />
                     </Button>
                 </> 
               }
               <Button
                 onClick={handleRefresh}
+                size="icon"
               >
-              <RefreshCcw className="h-4 w-4" />
+              <RefreshCcw className="h-2 w-2" />
             </Button>             
           </div>
 
@@ -88,7 +92,7 @@ export default function Home() {
 
         <div className="flex flex-col items-center space-y-4">
           <Card className="w-full p-0">
-            <CardContent className={`p-0 ${(connectionStatus === 'Connected') ? "h-[320px]" : "h-[470px]"}`}>
+            <CardContent className={`p-0 ${(connectionStatus === 'Connected') ? "h-[230px]" : "h-[470px]"}`}>
               {settings.serverIp === "" ? (
                 <div className="h-full w-full rounded bg-gray-800">
                   <div className="flex h-full items-center justify-center">
