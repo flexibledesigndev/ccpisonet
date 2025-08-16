@@ -49,12 +49,12 @@ export default function CoinTopUp() {
 
   // ✅ Countdown
   useEffect(() => {
-    if (connectionStatus !== 'Connected' || remainingSeconds === null) return;
+    if (remainingSeconds < 1 || remainingSeconds === null) return;
     const interval = setInterval(() => {
       setRemainingSeconds(prev => (prev > 0 ? prev - 1 : 0));
     }, 1000);
     return () => clearInterval(interval);
-  }, [connectionStatus, remainingSeconds]);
+  }, [remainingSeconds]);
 
   // ✅ Audio warning
   useEffect(() => {
@@ -67,7 +67,7 @@ export default function CoinTopUp() {
   return (
     <div className="pt-2 text-xs text-secondary-foreground space-y-4 text-center">
       <div className='font-bold'>
-        {connectionStatus === 'Connected' && (
+        {remainingSeconds > 0 && (
           remainingSeconds !== null ? (
             <>
               ⏳ Session time: <span className='text-2xl block mt-2 font-mono'>{formatTime(remainingSeconds)}</span>
@@ -83,7 +83,7 @@ export default function CoinTopUp() {
         {connected === false && (
           <div className='space-y-1'>
             <p style={{ color: "red" }}>❌ Disconnected</p>
-            <Button onClick={retry} disabled={loading}>Reconnect Now</Button>
+            <Button onClick={retry} disabled={connected}>Reconnect Now</Button>
           </div>
         )}        
       </div>

@@ -16,7 +16,7 @@ export default function Home() {
 
     useAppGlobalEffects();
 
-    const{ formatTime, timeLeft, settings, showWarning, pcName, connectionStatus } = useTimer();
+    const{ formatTime, timeLeft, settings, showWarning, pcName, remainingSeconds } = useTimer();
 
     const iframeRef = useRef(null);
   
@@ -32,20 +32,20 @@ export default function Home() {
     };
   return (
     <main className={`flex flex-col min-h-screen items-center 
-    ${(connectionStatus === 'Connected') ? "gap-2 px-2 py-0" : "gap-10"} 
+    ${(remainingSeconds > 0) ? "gap-2 px-2 py-0" : "gap-10"} 
     py-5 justify-center text-white`}>
       <Logo />
-      <div className={`mx-auto grid ${(connectionStatus === 'Connected') ? "w-full grid-cols-1" : "w-3xl grid-cols-2"}`} >
-        <div className={`flex flex-col items-center  ${(connectionStatus === 'Connected') ? "space-y-2" : "space-y-4"}`}>
+      <div className={`mx-auto grid ${(remainingSeconds > 0) ? "w-full grid-cols-1" : "w-3xl grid-cols-2"}`} >
+        <div className={`flex flex-col items-center  ${(remainingSeconds > 0) ? "space-y-2" : "space-y-4"}`}>
           {/* PC Name */}
-          <div className={`text-center font-bold tracking-wider text-secondary-foreground ${(connectionStatus === 'Connected') ? "text-lg" : "text-4xl"}`}>
+          <div className={`text-center font-bold tracking-wider text-secondary-foreground ${(remainingSeconds > 0) ? "text-lg" : "text-4xl"}`}>
             {pcName}
           </div>
 
           {/* Settings Icon */}
           <div className="flex gap-3">
             {
-                (connectionStatus != 'Connected') && <>
+                (remainingSeconds < 1) && <>
                     <Button 
                       onClick={handleSettingsClick}
                       size="icon"
@@ -63,7 +63,7 @@ export default function Home() {
           </div>
 
           {
-            (connectionStatus != 'Connected') && <>
+            (remainingSeconds < 1) && <>
                   {/* Timer */}
                   <div className="space-y-2">
                       <div className="space-y-2 text-center">
@@ -92,7 +92,7 @@ export default function Home() {
 
         <div className="flex flex-col items-center space-y-4">
           <Card className="w-full p-0">
-            <CardContent className={`p-0 ${(connectionStatus === 'Connected') ? "h-[230px]" : "h-[470px]"}`}>
+            <CardContent className={`p-0 ${(remainingSeconds > 0) ? "h-[230px]" : "h-[470px]"}`}>
               {settings.serverIp === "" ? (
                 <div className="h-full w-full rounded bg-gray-800">
                   <div className="flex h-full items-center justify-center">

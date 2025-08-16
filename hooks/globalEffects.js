@@ -11,14 +11,14 @@ export function useAppGlobalEffects() {
     const [tauriWindow, setTauriWindow] = useState(null);
     const [LogicalSize, setLogicalSize] = useState(null);
 
-    const { setTimeLeft, settings, connectionStatus } = useTimer();
+    const { setTimeLeft, settings, remainingSeconds } = useTimer();
 
     // Reset auto shutdown timer
     useEffect(() => {
-        if (connectionStatus === "Connected") {
+        if (remainingSeconds < 1 || remainingSeconds === null) {
           setTimeLeft(settings.timerDuration);
         }
-      }, [connectionStatus, setTimeLeft, settings.timerDuration]);    
+      }, [remainingSeconds, setTimeLeft, settings.timerDuration]);    
     
       useEffect(() => {
         (async () => {
@@ -34,7 +34,7 @@ export function useAppGlobalEffects() {
 
     const stopBlocker = async () => {
       try {
-        if (connectionStatus === "Connected") {
+        if (remainingSeconds > 0) {
           await tauriWindow.setAlwaysOnTop(false);
           await tauriWindow.setFullscreen(false); 
           await invoke("start_windowscc");
@@ -53,7 +53,7 @@ export function useAppGlobalEffects() {
     };
 
     stopBlocker();
-  }, [connectionStatus, tauriWindow, LogicalSize]);
+  }, [remainingSeconds, tauriWindow, LogicalSize]);
 
   // Disable refresh keys & right-click
   useEffect(() => {
