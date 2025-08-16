@@ -8,8 +8,6 @@ import { Button } from './ui/button';
 export default function CoinTopUp() {
   const { 
     formatTime, 
-    connectionStatus, 
-    setConnectionStatus,
     remainingSeconds,
     setRemainingSeconds,
     setResetTimer,    
@@ -26,26 +24,19 @@ export default function CoinTopUp() {
     if (connected === true && html) {
       const timeMatch = html.match(/var\s+sessiontime\s*=\s*"(\d+)"/i);
       const parsedTime = timeMatch ? parseInt(timeMatch[1], 10) : null;        
-
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const statusText = doc.querySelector('#connectionStatus')?.textContent?.trim();
-
-      setConnectionStatus(statusText || 'Disconnected');   
-
-      if (statusText === 'Connected') {
+      
+      if (parsedTime !== null) {
+        setRemainingSeconds(parsedTime);
         setResetTimer(true);
-        if (parsedTime !== null) setRemainingSeconds(parsedTime);
       } else {
         setResetTimer(false);
         setRemainingSeconds(null);
       }
     } else {
-      setConnectionStatus('Disconnected');
       setResetTimer(false);
       setRemainingSeconds(null);
     }
-  }, [connected, html, setConnectionStatus, setResetTimer, setRemainingSeconds]);
+  }, [connected, html, setResetTimer, setRemainingSeconds]);
 
   // ✅ Countdown
   useEffect(() => {

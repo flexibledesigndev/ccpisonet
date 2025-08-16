@@ -24,9 +24,8 @@ export function TimerProvider({ children }) {
     serverIp: '192.168.3.1'
   });
 
-  // ✅ Add connectionStatus and remainingSeconds
+  // ✅ Add remainingSeconds
   const [timeLeft, setTimeLeft] = useState(180);
-  const [connectionStatus, setConnectionStatus] = useState('unknown');
   const [remainingSeconds, setRemainingSeconds] = useState(null);
 
 
@@ -101,9 +100,7 @@ export function TimerProvider({ children }) {
       formatTime,
       showWarning,      
       remainingSeconds,
-      setRemainingSeconds,
-      connectionStatus,
-      setConnectionStatus
+      setRemainingSeconds
     }}>
       {children}
     </TimerContext.Provider>
