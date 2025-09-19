@@ -40,12 +40,14 @@ export function useAppGlobalEffects() {
           await invoke("start_windowscc");
           await invoke("stop_blocker");     
           await tauriWindow.setSize(new LogicalSize(380, 550));
-          await tauriWindow.center();                 
+          await tauriWindow.center(); 
         } else {
-          await tauriWindow.setAlwaysOnTop(true);
-          await tauriWindow.setFullscreen(true);
+          // Locked mode (no time)
           await invoke("stop_windowscc");
           await invoke("start_blocker");
+
+          await tauriWindow.setAlwaysOnTop(true);
+          await tauriWindow.setFullscreen(true);
         }
       } catch (error) {
         console.error("Failed to stop/start blocker:", error);
