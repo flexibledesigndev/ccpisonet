@@ -113,10 +113,19 @@ async fn fetch_html(url: String) -> Result<String, String> {
         .build()
         .map_err(|e| e.to_string())?;
 
-    let res = client.get(&url)
-        .send()
-        .await
-        .map_err(|e| format!("Network error: {}", e))?;
+    let res = client
+    .get(&url)
+    .send()
+    .await
+    .map_err(|e| {
+        // 👇 Distinguish timeout from other network errors
+        if e.is_timeout() {
+            "timeout".to_string()
+        } else {
+            format!("Network error: {}", e)
+        }
+    })?;
+
 
     if !res.status().is_success() {
         return Err(format!("HTTP error: {}", res.status()));

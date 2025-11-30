@@ -27,8 +27,17 @@ export function useTauriFetch(url, { retries = 3, retryDelay = 500, enabled = tr
         if (attempt < retries) {
           setTimeout(() => fetchWithRetry(attempt + 1), retryDelay * attempt);
         } else {
-          setError(err);
-          setConnected(false); // ❌ connection lost
+          const message =
+            typeof err === "string" ? err : err?.message || String(err);
+
+          const isTimeout = message.toLowerCase().includes("timeout");
+
+          setError({
+            type: isTimeout ? "timeout" : "network",
+            message,
+          });
+
+          setConnected(false); // ❌ connection lost (but we now know why)
           setLoading(false);
         }
       }

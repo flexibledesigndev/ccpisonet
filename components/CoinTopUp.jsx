@@ -70,13 +70,19 @@ export default function CoinTopUp() {
       </div>      
       <div className='space-y-1'>
         {settings.serverIp === "" && <p>Server IP is not set</p>}
-        {loading && <p>Checking server connection...</p>}
+        {/* {loading && <p>Checking server connection...</p>} */}
+        {error?.type === "timeout" && (
+          <p className="text-red-500 text-xs">
+            ⏱ Request timeout — unable to reach hotspot server.
+          </p>
+        )}
+
         {connected === false && (
           <div className='space-y-1'>
             <p style={{ color: "red" }}>❌ Disconnected</p>
             <Button onClick={retry}>Reconnect Now</Button>
           </div>
-        )}        
+        )}       
       </div>
     </div>
   );
