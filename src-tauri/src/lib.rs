@@ -16,8 +16,108 @@ use tauri::path::BaseDirectory;
 // no window hide in the background
 use std::os::windows::process::CommandExt; 
 
+use std::net::Ipv4Addr;
+
 struct KeyBlockerState(Mutex<Option<Child>>);
 struct WindowsCCState(Mutex<Option<Child>>);
+
+fn first_ipv4_in_text(s: &str) -> Option<String> {
+    for token in s
+        .replace(":", " ")
+        .replace("\r", " ")
+        .replace("\n", " ")
+        .split_whitespace()
+    {
+        if token.parse::<Ipv4Addr>().is_ok() {
+            return Some(token.to_string());
+        }
+    }
+    None
+}
+
+#[tauri::command]
+fn get_default_gateway_ip() -> Result<String, String> {
+    #[cfg(target_os = "windows")]
+    {
+        // ipconfig is available everywhere on Windows
+        let out = Command::new("ipconfig")
+            .output()
+            .map_err(|e| format!("Failed to run ipconfig: {}", e))?;
+
+        let text = String::from_utf8_lossy(&out.stdout);
+
+        // "Default Gateway" can appear with blank value then next line contains the IP
+        let mut hit = false;
+        for line in text.lines() {
+            if line.contains("Default Gateway") {
+                hit = true;
+
+                // Try same line first
+                if let Some(ip) = first_ipv4_in_text(line) {
+                    return Ok(ip);
+                }
+                // Otherwise next line might contain it
+                continue;
+            }
+
+            if hit {
+                if let Some(ip) = first_ipv4_in_text(line) {
+                    return Ok(ip);
+                }
+                // stop searching after a couple lines if no IP found
+                hit = false;
+            }
+        }
+
+        return Err("Default gateway not found (Windows)".to_string());
+    }
+
+    #[cfg(target_os = "linux")]
+    {
+        let out = Command::new("sh")
+            .arg("-c")
+            .arg("ip route show default 2>/dev/null")
+            .output()
+            .map_err(|e| format!("Failed to run ip route: {}", e))?;
+
+        let text = String::from_utf8_lossy(&out.stdout);
+        // typical: "default via 192.168.1.1 dev wlan0 ..."
+        if let Some(pos) = text.find(" via ") {
+            let tail = &text[pos + 5..];
+            if let Some(ip) = first_ipv4_in_text(tail) {
+                return Ok(ip);
+            }
+        }
+
+        Err("Default gateway not found (Linux)".to_string())
+    }
+
+    #[cfg(target_os = "macos")]
+    {
+        let out = Command::new("sh")
+            .arg("-c")
+            .arg("route -n get default 2>/dev/null")
+            .output()
+            .map_err(|e| format!("Failed to run route: {}", e))?;
+
+        let text = String::from_utf8_lossy(&out.stdout);
+        // contains: "gateway: 192.168.1.1"
+        for line in text.lines() {
+            if line.trim_start().starts_with("gateway:") {
+                if let Some(ip) = first_ipv4_in_text(line) {
+                    return Ok(ip);
+                }
+            }
+        }
+
+        Err("Default gateway not found (macOS)".to_string())
+    }
+
+    #[cfg(not(any(target_os = "windows", target_os = "linux", target_os = "macos")))]
+    {
+        Err("Unsupported OS".to_string())
+    }
+}
 
 #[tauri::command]
 fn start_blocker(app_handle: AppHandle, state: tauri::State<'_, KeyBlockerState>) -> Result<(), String> {
@@ -195,7 +295,8 @@ pub fn run() {
         start_blocker,
         stop_blocker,
         start_windowscc,
-        stop_windowscc
+        stop_windowscc,
+        get_default_gateway_ip
     ])
     .on_window_event(|window, event| {
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {

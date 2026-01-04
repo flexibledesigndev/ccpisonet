@@ -144,22 +144,6 @@ export default function Settings() {
               </div>
             </div>
 
-            {/* Piso Wifi Server Settings */}
-            <div className="space-y-4">
-              <label className="text-xl font-bold text-secondary-foreground">
-                    Server IP
-                  </label>
-                <input
-                  type="text"
-                  value={settings.serverIp || ""}
-                  onChange={(e) =>
-                    handleSettingChange("serverIp", e.target.value)
-                  }
-                  className="w-full rounded border border-gray-600 bg-gray-700 p-2 text-white placeholder-gray-400 focus:border-cyan-400 focus:outline-none"
-                  placeholder="Enter server IP"
-                />
-            </div>
-
             {/* User Settings */}
             <div className="space-y-4">
               <h2 className="text-xl font-semibold text-secondary-foreground">

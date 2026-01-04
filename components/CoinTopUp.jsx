@@ -1,83 +1,107 @@
-"use client";
+"use client"
 
-import { useTimer } from '@/app/context/TimerContext';
-import { useTauriFetch } from "@/hooks/useTauriFetch";
-import { useEffect } from "react";
-import { Button } from './ui/button';
+import { useEffect } from "react"
+import { useTimer } from "@/app/context/TimerContext"
+import { useTauriFetch } from "@/hooks/useTauriFetch"
+import { Button } from "./ui/button"
 
 export default function CoinTopUp() {
-  const { 
-    formatTime, 
+  const {
+    formatTime,
     remainingSeconds,
     setRemainingSeconds,
-    setResetTimer,    
-    settings
-  } = useTimer(); 
+    setResetTimer,
+    statusUrl,
+    gatewayLoading,
+    gatewayError,
+    refreshGateway,
+  } = useTimer()
 
-  const { data: html, error, loading, connected, retry } = useTauriFetch(
-    `http://${settings.serverIp}/status`,
-    { retries: 3, retryDelay: 500, pollInterval: 3000 }
-  );
+  // Fetch status page only when statusUrl is available
+  const { data: html, error, connected, retry } = useTauriFetch(statusUrl, {
+    retries: 3,
+    retryDelay: 500,
+    pollInterval: 5000,
+    enabled: !!statusUrl,
+  })
 
-  // ✅ Parse connection status only when html/connected changes
+  // Parse session time
   useEffect(() => {
     if (connected === true && html) {
-      const timeMatch = html.match(/var\s+sessiontime\s*=\s*"(\d+)"/i);
-      const parsedTime = timeMatch ? parseInt(timeMatch[1], 10) : null;        
-      
-      if (parsedTime !== null) {
-        setRemainingSeconds(parsedTime);
-        setResetTimer(true);
+      const timeMatch = html.match(/var\s+sessiontime\s*=\s*"(\d+)"/i)
+      const parsedTime = timeMatch ? parseInt(timeMatch[1], 10) : null
+
+      if (parsedTime !== null && Number.isFinite(parsedTime)) {
+        setRemainingSeconds(parsedTime)
+        setResetTimer(true)
       } else {
-        setResetTimer(false);
-        setRemainingSeconds(null);
+        setResetTimer(false)
+        setRemainingSeconds(null)
       }
     } else {
-      setResetTimer(false);
-      setRemainingSeconds(null);
+      setResetTimer(false)
+      setRemainingSeconds(null)
     }
-  }, [connected, html, setResetTimer, setRemainingSeconds]);
+  }, [connected, html, setResetTimer, setRemainingSeconds])
 
-  // ✅ Countdown
+  // Countdown (null-safe)
   useEffect(() => {
-    if (remainingSeconds < 1 || remainingSeconds === null) return;
-    const interval = setInterval(() => {
-      setRemainingSeconds(prev => (prev > 0 ? prev - 1 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [remainingSeconds]);
+    if (remainingSeconds === null || remainingSeconds < 1) return
 
-  // ✅ Audio warning
+    const interval = setInterval(() => {
+      setRemainingSeconds((prev) => {
+        if (prev === null) return null
+        return prev > 0 ? prev - 1 : 0
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [remainingSeconds, setRemainingSeconds])
+
+  // Audio warning
   useEffect(() => {
     if (remainingSeconds === 60) {
-      const audio = new Audio('/minute-warning.mp3');
-      audio.play().catch(err => console.error(err));
+      const audio = new Audio("/minute-warning.mp3")
+      audio.play().catch(console.error)
     }
-  }, [remainingSeconds]);    
+  }, [remainingSeconds])
 
   return (
     <div className="pt-2 text-xs text-secondary-foreground space-y-4 text-center">
-      <div className='font-bold'>
-        {remainingSeconds > 0 && (
-          remainingSeconds !== null ? (
-            <>
-              ⏳ Session time: <span className='text-2xl block mt-2 font-mono'>{formatTime(remainingSeconds)}</span>
-            </>
-          ) : (
-            <span>Loading session time...</span>
-          )
+      <div className="font-bold">
+        {remainingSeconds !== null && remainingSeconds > 0 ? (
+          <>
+            ⏳ Session time:{" "}
+            <span className="text-2xl block mt-2 font-mono">
+              {formatTime(remainingSeconds)}
+            </span>
+          </>
+        ) : null }
+      </div>
+
+      <div className="space-y-1">
+        {/* Gateway status */}
+        {gatewayLoading && <p>Detecting gateway...</p>}
+        {gatewayError && <p style={{ color: "red" }}>Gateway error: {gatewayError}</p>}
+
+        {/* If gateway failed, allow retry gateway detection */}
+        {!gatewayLoading && gatewayError && (
+          <div className="space-y-1">
+            <Button onClick={refreshGateway}>Retry gateway detection</Button>
+          </div>
         )}
-      </div>      
-      <div className='space-y-1'>
-        {settings.serverIp === "" && <p>Server IP is not set</p>}
-        {loading && <p>Checking server connection...</p>}
+
+        {/* Connection status */}
         {connected === false && (
-          <div className='space-y-1'>
+          <div className="space-y-1">
             <p style={{ color: "red" }}>❌ Disconnected</p>
             <Button onClick={retry}>Reconnect Now</Button>
           </div>
-        )}        
+        )}
+
+        {/* Optional: show fetch error */}
+        {error && <p style={{ color: "red" }}>{String(error)}</p>}
       </div>
     </div>
-  );
+  )
 }
