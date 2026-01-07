@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useTimer } from "@/app/context/TimerContext"
 import { useTauriFetch } from "@/hooks/useTauriFetch"
 import { Button } from "./ui/button"
@@ -17,11 +17,13 @@ export default function CoinTopUp() {
     refreshGateway,
   } = useTimer()
 
+  const [fetchPerSec, setFetchPerSec] = useState(null)
+
   // Fetch status page only when statusUrl is available
   const { data: html, error, connected, retry } = useTauriFetch(statusUrl, {
     retries: 3,
     retryDelay: 500,
-    pollInterval: 2000,
+    pollInterval: 5000,
     enabled: !!statusUrl,
   })
 
@@ -33,14 +35,17 @@ export default function CoinTopUp() {
 
       if (parsedTime !== null && Number.isFinite(parsedTime)) {
         setRemainingSeconds(parsedTime)
+        setFetchPerSec(parsedTime)
         setResetTimer(true)
       } else {
         setResetTimer(false)
         setRemainingSeconds(null)
+        setFetchPerSec(null)
       }
     } else {
       setResetTimer(false)
       setRemainingSeconds(null)
+      setFetchPerSec(null)
     }
   }, [connected, html, setResetTimer, setRemainingSeconds])
 
@@ -53,10 +58,24 @@ export default function CoinTopUp() {
         if (prev === null) return null
         return prev > 0 ? prev - 1 : 0
       })
-    }, 1000)
+    }, 5000)
 
     return () => clearInterval(interval)
   }, [remainingSeconds, setRemainingSeconds])
+
+  /* fetch per seconds */
+  useEffect(() => {
+    if (fetchPerSec === null || fetchPerSec < 1) return
+
+    const interval = setInterval(() => {
+      setFetchPerSec((prev) => {
+        if (prev === null) return null
+        return prev > 0 ? prev - 1 : 0
+      })
+    }, 1000)
+
+    return () => clearInterval(interval)
+  }, [fetchPerSec, setFetchPerSec])
 
   // Audio warning
   useEffect(() => {
@@ -69,11 +88,11 @@ export default function CoinTopUp() {
   return (
     <div className="pt-2 text-xs text-secondary-foreground space-y-4 text-center">
       <div className="font-bold">
-        {remainingSeconds !== null && remainingSeconds > 0 ? (
+        {fetchPerSec !== null && fetchPerSec > 0 ? (
           <>
             ⏳ Session time:{" "}
             <span className="text-2xl block mt-2 font-mono">
-              {formatTime(remainingSeconds)}
+              {formatTime(fetchPerSec)}
             </span>
           </>
         ) : null }
