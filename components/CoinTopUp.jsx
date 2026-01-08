@@ -4,8 +4,9 @@ import { useEffect, useState } from "react"
 import { useTimer } from "@/app/context/TimerContext"
 import { useTauriFetch } from "@/hooks/useTauriFetch"
 import { Button } from "./ui/button"
+import { useRouter } from "next/navigation"
 
-export default function CoinTopUp() {
+export default function CoinTopUp({ timeHeading } = {}) {
   const {
     formatTime,
     remainingSeconds,
@@ -16,6 +17,8 @@ export default function CoinTopUp() {
     gatewayError,
     refreshGateway,
   } = useTimer()
+
+  const router = useRouter();
 
   const [fetchPerSec, setFetchPerSec] = useState(null)
 
@@ -79,18 +82,20 @@ export default function CoinTopUp() {
 
   // Audio warning
   useEffect(() => {
-    if (remainingSeconds === 60) {
+    if (fetchPerSec === 60) {
       const audio = new Audio("/minute-warning.mp3")
       audio.play().catch(console.error)
+    } else if( fetchPerSec === 180 ) {
+      router.push("/warning");
     }
-  }, [remainingSeconds])
+  }, [fetchPerSec])
 
   return (
     <div className="pt-2 text-xs text-secondary-foreground space-y-4 text-center">
       <div className="font-bold">
         {fetchPerSec !== null && fetchPerSec > 0 ? (
           <>
-            ⏳ Session time:{" "}
+            {timeHeading ? timeHeading : '⏳ Session time: '}
             <span className="text-2xl block mt-2 font-mono">
               {formatTime(fetchPerSec)}
             </span>

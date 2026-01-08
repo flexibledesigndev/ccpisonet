@@ -7,11 +7,19 @@
   ],
   "permissions": [
     "core:default",
+
     "core:window:allow-set-always-on-top",
     "core:window:allow-set-fullscreen",
     "core:window:allow-set-size",
     "core:window:allow-center",
     "core:window:allow-set-focus",
-    "core:window:allow-show"
+    "core:window:allow-show",
+
+    "core:window:allow-set-position",
+    "core:window:allow-current-monitor",
+    "core:window:allow-primary-monitor",
+    "core:window:allow-outer-size",
+    "core:window:allow-minimize",
+    "core:window:allow-hide"
   ]
 }
