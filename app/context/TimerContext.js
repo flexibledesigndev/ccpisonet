@@ -21,7 +21,6 @@ export function TimerProvider({ children }) {
     logoType: "image",
     logoText: "Cara & Casey Pisonet",
     logoImage: null,
-    relaunchOnClose: true,
   })
 
   const [timeLeft, setTimeLeft] = useState(180)
@@ -48,9 +47,16 @@ export function TimerProvider({ children }) {
     }
   }, [])
 
-  // Fetch gateway on mount
+  // Fetch gateway on mount, auto-retry every 5s until found
   useEffect(() => {
     refreshGateway()
+
+    const intervalId = setInterval(async () => {
+      const gw = await refreshGateway()
+      if (gw) clearInterval(intervalId)
+    }, 5000)
+
+    return () => clearInterval(intervalId)
   }, [refreshGateway])
 
   // ✅ Load settings from file (and strip serverIp if it exists in old saved json)

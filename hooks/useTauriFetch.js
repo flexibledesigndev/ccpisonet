@@ -4,7 +4,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { useState, useEffect, useRef, useCallback } from "react";
 
-export function useTauriFetch(url, { retries = 3, retryDelay = 500, enabled = true, pollInterval = null } = {}) {
+export function useTauriFetch(url, { retries = 5, retryDelay = 1000, enabled = true, pollInterval = null } = {}) {
   const [data, setData] = useState(null);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);

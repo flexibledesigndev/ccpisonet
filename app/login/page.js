@@ -1,8 +1,9 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTimer } from "../context/TimerContext";
 import { ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { invoke } from "@tauri-apps/api/core";
 import Logo from "@/components/Logo";
 
 export default function LoginPage() {
@@ -10,7 +11,13 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const router = useRouter();
-  const { timeLeft, formatTime, settings } = useTimer(); 
+  const { timeLeft, formatTime, settings, remainingSeconds } = useTimer();
+
+  // Stop keyblocker so Tab key works on login form
+  // No cleanup needed — home page's useAppGlobalEffects handles blocker state
+  useEffect(() => {
+    invoke("stop_blocker").catch(console.error);
+  }, []);
 
   const handleLogin = (e) => {
     e.preventDefault();
@@ -43,7 +50,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <div className="space-y-8 rounded-lg bg-white p-6">     
+          <div className="space-y-8 rounded-lg bg-white p-6">
             <Logo />
 
             {/* Login Form */}
@@ -102,14 +109,16 @@ export default function LoginPage() {
             </form>
 
             {/* Timer Display */}
-            <div className="space-y-2 text-center">
-              <div className="text-xl text-secondary-foreground">
-                This computer will shutdown in:
+            {remainingSeconds < 1 && (
+              <div className="space-y-2 text-center">
+                <div className="text-xl text-secondary-foreground">
+                  This computer will shutdown in:
+                </div>
+                <div className="font-mono text-4xl font-bold text-secondary-foreground">
+                  {formatTime(timeLeft)}
+                </div>
               </div>
-              <div className="font-mono text-4xl font-bold text-secondary-foreground">
-                {formatTime(timeLeft)}
-              </div>
-            </div>
+            )}
           </div>
         </div>
       </div>

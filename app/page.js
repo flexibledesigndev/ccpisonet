@@ -47,31 +47,26 @@ export default function Home() {
       <Logo />
 
       <div
-        className={`mx-auto grid ${
-          remainingSeconds > 0 ? "w-full grid-cols-1" : "w-3xl grid-cols-2"
-        }`}
+        className={`mx-auto grid ${remainingSeconds > 0 ? "w-full grid-cols-1" : "w-3xl grid-cols-2"
+          }`}
       >
         <div
-          className={`flex flex-col items-center ${
-            remainingSeconds > 0 ? "space-y-2" : "space-y-4"
-          }`}
+          className={`flex flex-col items-center ${remainingSeconds > 0 ? "space-y-2" : "space-y-4"
+            }`}
         >
           {/* PC Name */}
           <div
-            className={`text-center font-bold tracking-wider text-secondary-foreground ${
-              remainingSeconds > 0 ? "text-lg" : "text-4xl"
-            }`}
+            className={`text-center font-bold tracking-wider text-secondary-foreground ${remainingSeconds > 0 ? "text-lg" : "text-4xl"
+              }`}
           >
             {pcName}
           </div>
 
           {/* Settings + Refresh */}
           <div className="flex gap-3">
-            {remainingSeconds < 1 && (
-              <Button onClick={handleSettingsClick} size="icon">
-                <Settings className="h-2 w-2" />
-              </Button>
-            )}
+            <Button onClick={handleSettingsClick} size="icon">
+              <Settings className="h-2 w-2" />
+            </Button>
 
             <Button onClick={handleRefresh} size="icon">
               <RefreshCcw className="h-2 w-2" />

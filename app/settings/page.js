@@ -92,9 +92,8 @@ export default function Settings() {
 
           {message.text && (
             <div
-              className={`mb-6 rounded p-4 ${
-                message.type === "success" ? "bg-green-500" : "bg-red-500"
-              }`}
+              className={`mb-6 rounded p-4 ${message.type === "success" ? "bg-green-500" : "bg-red-500"
+                }`}
             >
               {message.text}
             </div>
@@ -277,26 +276,30 @@ export default function Settings() {
                 Save Settings
               </button>
             </div>
-            {/* Relaunch on Close Toggle */}
-            <div className="mt-6 flex items-center">
-              <input
-                id="relaunchOnClose"
-                type="checkbox"
-                checked={settings.relaunchOnClose}
-                onChange={(e) =>
-                  setSettings((prev) => ({
-                    ...prev,
-                    relaunchOnClose: e.target.checked,
-                  }))
-                }
-                className="mr-2"
-              />
-              <label
-                htmlFor="relaunchOnClose"
-                className="font-medium text-secondary-foreground"
+
+            {/* Terminate App */}
+            <div className="mt-6 border-t border-gray-600 pt-6">
+              <h2 className="text-xl font-semibold text-red-400">
+                Danger Zone
+              </h2>
+              <p className="mt-1 text-sm text-gray-400">
+                Fully terminate the app without relaunching.
+              </p>
+              <button
+                onClick={async () => {
+                  if (window.confirm("Are you sure you want to terminate the app? It will not relaunch.")) {
+                    try {
+                      await invoke("force_exit");
+                    } catch (e) {
+                      // Process exits immediately, this catch won't usually run
+                      console.error("Force exit failed:", e);
+                    }
+                  }
+                }}
+                className="mt-3 rounded bg-red-600 px-6 py-2 font-bold text-white transition-colors duration-300 hover:bg-red-700"
               >
-                Relaunch app when closed
-              </label>
+                Terminate App
+              </button>
             </div>
           </div>
         </div>

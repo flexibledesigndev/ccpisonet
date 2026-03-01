@@ -236,6 +236,22 @@ fn get_hostname() -> String {
 }
 
 #[tauri::command]
+fn force_exit(
+    key_state: State<'_, KeyBlockerState>,
+    wcc_state: State<'_, WindowsCCState>,
+) -> Result<(), String> {
+    // Stop child processes before exiting
+    if let Some(mut child) = key_state.0.lock().unwrap().take() {
+        let _ = child.kill();
+    }
+    if let Some(mut child) = wcc_state.0.lock().unwrap().take() {
+        let _ = child.kill();
+    }
+    // Exit immediately, bypasses the on_window_event relaunch handler
+    std::process::exit(0);
+}
+
+#[tauri::command]
 fn shutdown_pc() -> Result<(), String> {
     #[cfg(target_os = "windows")]
     {
@@ -296,43 +312,22 @@ pub fn run() {
         stop_blocker,
         start_windowscc,
         stop_windowscc,
-        get_default_gateway_ip
+        get_default_gateway_ip,
+        force_exit
     ])
     .on_window_event(|window, event| {
         if let tauri::WindowEvent::CloseRequested { api, .. } = event {
-            // Always block closing
             api.prevent_close();
 
             let state = window.state::<KeyBlockerState>();
-            let _ = stop_blocker(state); // ignore errors          
-            
+            let _ = stop_blocker(state);
+
             let windowscc_state = window.state::<WindowsCCState>();
-            let _ = stop_windowscc(windowscc_state); // ignore errors     
+            let _ = stop_windowscc(windowscc_state);
 
+            // Always relaunch on close
             let app_handle = window.app_handle();
-
-            // Read settings.json safely
-            let relaunch = match app_handle.path().app_data_dir() {
-                Ok(app_dir) => {
-                    let settings_path = app_dir.join("settings.json");
-                    if let Ok(settings_str) = fs::read_to_string(settings_path) {
-                        if let Ok(settings_json) = serde_json::from_str::<Value>(&settings_str) {
-                            settings_json.get("relaunchOnClose").and_then(|v| v.as_bool()).unwrap_or(true)
-                        } else {
-                            true // default relaunch if JSON parse fails
-                        }
-                    } else {
-                        true // default relaunch if reading fails
-                    }
-                }
-                Err(_) => true, // default relaunch if path fails
-            };
-    
-            if relaunch {
-                api.prevent_close();
-                app_handle.restart();
-            }            
-
+            app_handle.restart();
         }
     })    
     .run(tauri::generate_context!())

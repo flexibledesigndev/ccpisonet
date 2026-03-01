@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useTimer } from "@/app/context/TimerContext"
 import { useTauriFetch } from "@/hooks/useTauriFetch"
 import { Button } from "./ui/button"
@@ -20,13 +20,11 @@ export default function CoinTopUp({ timeHeading } = {}) {
 
   const router = useRouter();
 
-  const [fetchPerSec, setFetchPerSec] = useState(null)
-
   // Fetch status page only when statusUrl is available
   const { data: html, error, connected, retry } = useTauriFetch(statusUrl, {
-    retries: 3,
-    retryDelay: 500,
-    pollInterval: 5000,
+    retries: 5,
+    retryDelay: 1000,
+    pollInterval: 1000,
     enabled: !!statusUrl,
   })
 
@@ -38,17 +36,14 @@ export default function CoinTopUp({ timeHeading } = {}) {
 
       if (parsedTime !== null && Number.isFinite(parsedTime)) {
         setRemainingSeconds(parsedTime)
-        setFetchPerSec(parsedTime)
         setResetTimer(true)
       } else {
         setResetTimer(false)
         setRemainingSeconds(null)
-        setFetchPerSec(null)
       }
     } else {
       setResetTimer(false)
       setRemainingSeconds(null)
-      setFetchPerSec(null)
     }
   }, [connected, html, setResetTimer, setRemainingSeconds])
 
@@ -61,46 +56,32 @@ export default function CoinTopUp({ timeHeading } = {}) {
         if (prev === null) return null
         return prev > 0 ? prev - 1 : 0
       })
-    }, 5000)
+    }, 1000)
 
     return () => clearInterval(interval)
   }, [remainingSeconds, setRemainingSeconds])
 
-  /* fetch per seconds */
-  useEffect(() => {
-    if (fetchPerSec === null || fetchPerSec < 1) return
-
-    const interval = setInterval(() => {
-      setFetchPerSec((prev) => {
-        if (prev === null) return null
-        return prev > 0 ? prev - 1 : 0
-      })
-    }, 1000)
-
-    return () => clearInterval(interval)
-  }, [fetchPerSec, setFetchPerSec])
-
   // Audio warning
   useEffect(() => {
-    if (fetchPerSec === 60) {
+    if (remainingSeconds === 60) {
       const audio = new Audio("/minute-warning.mp3")
       audio.play().catch(console.error)
-    } else if( fetchPerSec === 180 ) {
+    } else if (remainingSeconds === 180) {
       router.push("/warning");
     }
-  }, [fetchPerSec])
+  }, [remainingSeconds])
 
   return (
     <div className="pt-2 text-xs text-secondary-foreground space-y-4 text-center">
       <div className="font-bold">
-        {fetchPerSec !== null && fetchPerSec > 0 ? (
+        {remainingSeconds !== null && remainingSeconds > 0 ? (
           <>
             {timeHeading ? timeHeading : '⏳ Session time: '}
             <span className="text-2xl block mt-2 font-mono">
-              {formatTime(fetchPerSec)}
+              {formatTime(remainingSeconds)}
             </span>
           </>
-        ) : null }
+        ) : null}
       </div>
 
       <div className="space-y-1">
