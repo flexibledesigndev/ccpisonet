@@ -8,7 +8,6 @@ export function useAppGlobalEffects() {
 
   const [tauriWindow, setTauriWindow] = useState(null);
   const [LogicalSize, setLogicalSize] = useState(null);
-  const lastModeRef = useRef(null); // tracks "unlocked" or "locked"
 
   const { setTimeLeft, settings, remainingSeconds } = useTimer();
 
@@ -31,23 +30,15 @@ export function useAppGlobalEffects() {
   useEffect(() => {
     if (!tauriWindow || !LogicalSize) return;
 
-    const newMode = remainingSeconds > 0 ? "unlocked" : "locked";
-    const modeChanged = lastModeRef.current !== newMode;
-    lastModeRef.current = newMode;
-
-    const applyMode = async () => {
+    const stopBlocker = async () => {
       try {
-        if (newMode === "unlocked") {
-          // Always enforce these (lightweight, ensures correct state)
+        if (remainingSeconds > 0) {
           await tauriWindow.setAlwaysOnTop(false);
           await tauriWindow.setFullscreen(false);
           await invoke("start_windowscc");
           await invoke("stop_blocker");
-          // Only resize/center on mode transition (prevents flash)
-          if (modeChanged) {
-            await tauriWindow.setSize(new LogicalSize(380, 550));
-            await tauriWindow.center();
-          }
+          await tauriWindow.setSize(new LogicalSize(380, 550));
+          await tauriWindow.center();
         } else {
           // Locked mode (no time)
           await invoke("stop_windowscc");
@@ -60,7 +51,7 @@ export function useAppGlobalEffects() {
       }
     };
 
-    applyMode();
+    stopBlocker();
   }, [remainingSeconds, tauriWindow, LogicalSize]);
 
   // Disable refresh keys & right-click
