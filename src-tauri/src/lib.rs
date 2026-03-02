@@ -1,7 +1,6 @@
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 
 use std::fs;
-use serde_json::Value;
 
 use std::env;
 use reqwest;
@@ -332,4 +331,5 @@ pub fn run() {
     })    
     .run(tauri::generate_context!())
     .expect("error while running tauri application");
+
 }

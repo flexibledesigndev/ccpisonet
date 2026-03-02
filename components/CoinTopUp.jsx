@@ -24,7 +24,7 @@ export default function CoinTopUp({ timeHeading } = {}) {
   const { data: html, error, connected, retry } = useTauriFetch(statusUrl, {
     retries: 5,
     retryDelay: 1000,
-    pollInterval: 1000,
+    pollInterval: 3000,
     enabled: !!statusUrl,
   })
 
